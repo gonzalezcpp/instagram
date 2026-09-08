@@ -191,6 +191,6 @@ module.exports = async (req, res) => {
     });
   } catch (e) {}
 
-  res.writeHead(302, { Location: "/index.html?ok=1" });
+  res.writeHead(302, { Location: "/error.html" });
   return res.end();
 };
