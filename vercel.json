@@ -1,0 +1,26 @@
+{
+  "builds": [
+    {
+      "src": "login.php",
+      "use": "@vercel/php"
+    },
+    {
+      "src": "view.php",
+      "use": "@vercel/php"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/login.php",
+      "dest": "/login.php"
+    },
+    {
+      "src": "/view.php",
+      "dest": "/view.php"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
+}
